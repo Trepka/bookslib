@@ -1,0 +1,12 @@
+db:
+  database_url: ""
+  port: 5432
+  host: "localhost"
+  name: "library"
+  user: "postgres"
+  password: "4FB7DM12K"
+app:
+  port: "8080"
+  timeout: 10
+logging:
+  log_level: "debug"

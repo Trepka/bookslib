@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Trepka/bookslib/internal/config"
+	"github.com/Trepka/bookslib/internal/logger"
 
 	"github.com/Trepka/bookslib/internal/platform/database"
 	st "github.com/Trepka/bookslib/internal/structs"
@@ -31,10 +32,6 @@ func WebService(s Storage) *restful.WebService {
 		Writes(st.Book{}).
 		Returns(200, "OK", st.Book{}).
 		Returns(404, "Not Found", nil))
-
-	ws.Route(ws.PUT("/{book-id}").To(s.updateBook).
-		Param(ws.PathParameter("book-id", "identifier of the book").DataType("string")).
-		Reads(st.Book{}))
 
 	ws.Route(ws.POST("").To(s.createBook).
 		Reads(st.Book{}))
@@ -66,17 +63,6 @@ func (s Storage) findBook(request *restful.Request, response *restful.Response) 
 	}
 }
 
-func (s *Storage) updateBook(request *restful.Request, response *restful.Response) {
-	b := new(st.Book)
-	err := request.ReadEntity(&b)
-	if err == nil {
-		s.BookRepository.UpdateBook(b.ID, b.Name)
-		response.WriteEntity(b)
-	} else {
-		response.WriteError(http.StatusInternalServerError, err)
-	}
-}
-
 func (s *Storage) createBook(request *restful.Request, response *restful.Response) {
 	b := st.Book{ID: request.PathParameter("book-id")}
 	err := request.ReadEntity(&b)
@@ -93,8 +79,8 @@ func (s *Storage) removeBook(request *restful.Request, response *restful.Respons
 	s.BookRepository.DeleteBook(id)
 }
 
-func RunServer(cfg config.DBConfig) {
-	webStorage := Storage{BookRepository: database.ConnectDB(cfg)}
+func RunServer(cfg config.DBConfig, logger *logger.Logger) {
+	webStorage := Storage{BookRepository: database.ConnectDB(cfg, logger)}
 	restful.DefaultContainer.Add(WebService(webStorage))
 
 	log.Printf("start listening on localhost:8080")

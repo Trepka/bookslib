@@ -4,9 +4,9 @@ db:
   host: "localhost"
   name: "library"
   user: "postgres"
-  password: "4FB7DM12K"
+  password: "postgres"
 app:
   port: "8080"
   timeout: 10
 logging:
-  log_level: "debug"
+  log_level: "info"

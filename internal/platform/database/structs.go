@@ -1,4 +1,4 @@
-package structs
+package database
 
 type Book struct {
 	ID     string `json:"book-id"`
@@ -7,3 +7,5 @@ type Book struct {
 	Genre  string `json:"genre"`
 	Year   int    `json:"year"`
 }
+
+type Library []Book

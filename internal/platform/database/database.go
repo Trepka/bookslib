@@ -5,14 +5,9 @@ import (
 
 	"github.com/Trepka/bookslib/internal/config"
 	"github.com/Trepka/bookslib/internal/logger"
-	st "github.com/Trepka/bookslib/internal/structs"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
-
-type BookStructure st.Book
-
-type Library []BookStructure
 
 type PostgressBooksStorage struct {
 	db  *sqlx.DB
@@ -37,7 +32,7 @@ func ConnectDB(config config.DBConfig, logger *logger.Logger) PostgressBooksStor
 
 func (p *PostgressBooksStorage) GetAllBooks() (Library, error) {
 	var l Library
-	var b BookStructure
+	var b Book
 	rows, err := p.db.Queryx("SELECT * FROM books")
 	if err != nil {
 		p.log.Error().
@@ -59,8 +54,8 @@ func (p *PostgressBooksStorage) GetAllBooks() (Library, error) {
 	return l, nil
 }
 
-func (p *PostgressBooksStorage) GetBook(id string) (BookStructure, error) {
-	var b BookStructure
+func (p *PostgressBooksStorage) GetBook(id string) (Book, error) {
+	var b Book
 	row := p.db.QueryRowx("SELECT id, name, author, genre, year FROM books WHERE id = $1", id)
 	err := row.Scan(&b.ID, &b.Name, &b.Author, &b.Genre, &b.Year)
 	if err != nil {
@@ -73,7 +68,7 @@ func (p *PostgressBooksStorage) GetBook(id string) (BookStructure, error) {
 	return b, nil
 }
 
-func (p *PostgressBooksStorage) PutBook(b BookStructure) {
+func (p *PostgressBooksStorage) PutBook(b Book) {
 	tx := p.db.MustBegin()
 	tx.MustExec("INSERT INTO books (id, name, author, genre, year) VALUES ($1, $2, $3, $4, $5)", b.ID, b.Name, b.Author, b.Genre, b.Year)
 	p.log.Info().Timestamp().Msg(b.String())
@@ -86,6 +81,6 @@ func (p *PostgressBooksStorage) DeleteBook(id string) {
 	p.log.Info().Timestamp().Msg("delete book " + b.String())
 }
 
-func (b BookStructure) String() string {
+func (b Book) String() string {
 	return fmt.Sprintf("ID:%s Name:%s Author:%s Genre:%s Year:%d", b.ID, b.Name, b.Author, b.Genre, b.Year)
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/Trepka/bookslib/internal/logger"
 
 	"github.com/Trepka/bookslib/internal/platform/database"
-	st "github.com/Trepka/bookslib/internal/structs"
 	"github.com/emicklei/go-restful"
 )
 
@@ -24,17 +23,17 @@ func WebService(s Storage) *restful.WebService {
 		Produces(restful.MIME_JSON, restful.MIME_XML)
 
 	ws.Route(ws.GET("/").To(s.findAllBooks).
-		Writes([]st.Book{}).
-		Returns(200, "OK", []st.Book{}))
+		Writes([]database.Book{}).
+		Returns(200, "OK", []database.Book{}))
 
 	ws.Route(ws.GET("/{book-id}").To(s.findBook).
 		Param(ws.PathParameter("book-id", "identifier of the book").DataType("integer").DefaultValue("1")).
-		Writes(st.Book{}).
-		Returns(200, "OK", st.Book{}).
+		Writes(database.Book{}).
+		Returns(200, "OK", database.Book{}).
 		Returns(404, "Not Found", nil))
 
 	ws.Route(ws.POST("").To(s.createBook).
-		Reads(st.Book{}))
+		Reads(database.Book{}))
 
 	ws.Route(ws.DELETE("/{book-id}").To(s.removeBook).
 		Param(ws.PathParameter("book-id", "identifier of the book").DataType("string")))
@@ -64,10 +63,10 @@ func (s Storage) findBook(request *restful.Request, response *restful.Response) 
 }
 
 func (s *Storage) createBook(request *restful.Request, response *restful.Response) {
-	b := st.Book{ID: request.PathParameter("book-id")}
+	b := database.Book{ID: request.PathParameter("book-id")}
 	err := request.ReadEntity(&b)
 	if err == nil {
-		s.BookRepository.PutBook(database.BookStructure(b))
+		s.BookRepository.PutBook(database.Book(b))
 		response.WriteHeaderAndEntity(http.StatusCreated, b)
 	} else {
 		response.WriteError(http.StatusInternalServerError, err)
